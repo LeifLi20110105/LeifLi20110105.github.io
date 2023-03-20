@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Math Game</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+      
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 2rem;
+      }
+      
+      button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 1rem;
+        margin-top: 2rem;
+        cursor: pointer;
+        border-radius: 0.5rem;
+      }
+      
+      button:hover {
+        background-color: #3e8e41;
+      }
+      
+      input[type=number] {
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        margin: 0.5rem;
+        border: 2px solid #ccc;
+        border-radius: 0.5rem;
+        width: 10rem;
+        text-align: center;
+      }
+      
+      #timer {
+        font-size: 2rem;
+        margin-top: 2rem;
+      }
+      
+      #timer.warning {
+        color: red;
+      }
+    </style>
+  </head>
+  
+  <body>
+    <h1>Math Game</h1>
+    <p>What is:</p>
+    <p id="question"></p>
+    <input type="number" id="answer" autofocus>
+    <br>
+    <button onclick="checkAnswer()">Submit</button>
+    <p id="result"></p>
+    <div id="timer">10</div>
+    
+    <script>
+      let num1, num2, answer, timeLeft;
+      
+      function generateQuestion() {
+        num1 = Math.floor(Math.random() * 10) + 1;
+        num2 = Math.floor(Math.random() * 10) + 1;
+        answer = num1 + num2;
+        
+        document.getElementById("question").innerHTML = `${num1} + ${num2} = ?`;
+        document.getElementById("answer").value = "";
+        document.getElementById("answer").focus();
+        document.getElementById("result").innerHTML = "";
+        
+        timeLeft = 10;
+        document.getElementById("timer").innerHTML = timeLeft;
+        document.getElementById("timer").classList.remove("warning");
+      }
+      
+      function checkAnswer() {
+        let userAnswer = document.getElementById("answer").value;
+        if (userAnswer == answer) {
+          document.getElementById("result").innerHTML = "Correct!";
+          generateQuestion();
+        } else {
+          document.getElementById("result").innerHTML = "Wrong. Try again.";
+        }
+      }
+      
+      function countdown() {
+        timeLeft--;
+        document.getElementById("timer").innerHTML = timeLeft;
+        if (timeLeft <= 3) {
+          document.getElementById("timer").classList.add("warning");
+        }
+        if (timeLeft === 0) {
+          document.getElementById("result").innerHTML = "Time's up! Game over.";
+          document.getElementById("answer").disabled = true;
+          clearInterval(timer);
+        }
+      }
+      
+      generateQuestion();
+      let timer = setInterval(countdown, 1000);
+    </script>
+  </body>
+</html>
