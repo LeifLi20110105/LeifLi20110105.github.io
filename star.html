@@ -79,9 +79,8 @@
 <body>
   <div class="title-container">
     <h1>Star Clan Altar</h1>
-    <button onclick="modifyData()">纪念星族</button>
+    <button onclick="modifyData()">Commemorating StarClan</button>
     <p>Value: <span id="variableValue">0</span></p>
-    <input type="hidden" id="hiddenValue" value="0">
   </div>
   <div class="container">
     <img class="foreground-image" src="mothflight.jpg" alt="Moth Flight Image">
@@ -89,13 +88,13 @@
   </div>
 
   <script>
-    let value = parseInt(document.getElementById('hiddenValue').value) || 0;
+    let value = parseInt(localStorage.getItem('variableValue')) || 0;
     document.getElementById('variableValue').textContent = value;
 
     function modifyData() {
       value++;
       document.getElementById('variableValue').textContent = value;
-      document.getElementById('hiddenValue').value = value;
+      localStorage.setItem('variableValue', value);
     }
   </script>
 </body>
