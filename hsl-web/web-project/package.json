@@ -1,0 +1,12 @@
+{
+  "name": "web-project",
+  "version": "1.0.0",
+  "description": "A simple web project displaying text and an image.",
+  "main": "src/index.html",
+  "scripts": {
+    "start": "open src/index.html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
