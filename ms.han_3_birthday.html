@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日抽奖活动</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #6a11cb;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        input {
+            padding: 12px 20px;
+            width: 70%;
+            max-width: 300px;
+            border: 2px solid #6a11cb;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 30px auto;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            box-shadow: 0 0 0 8px #fff, 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .wheel-section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .wheel-center {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #6a11cb;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            background: #e74c3c;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 20;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .result h2 {
+            color: #6a11cb;
+            margin-bottom: 10px;
+        }
+        
+        .result p {
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+        
+        .birthday-message {
+            font-size: 1.8rem;
+            color: #e74c3c;
+            margin-top: 20px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            z-index: 1000;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(1000px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>生日抽奖活动</h1>
+        
+        <div class="input-section">
+            <input type="text" id="nameInput" placeholder="请输入你的姓名">
+            <button id="startBtn">开始抽奖</button>
+        </div>
+        
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <!-- 转盘区域将通过JavaScript动态生成 -->
+            </div>
+            <div class="wheel-center">GO</div>
+        </div>
+        
+        <div class="result" id="result">
+            <h2>抽奖结果</h2>
+            <p id="resultText"></p>
+            <div class="birthday-message" id="birthdayMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置奖项和概率
+        // 注意：概率总和应为1（100%）
+        const prizes = [
+            { name: "免作业一次", probability: 0.1, color: "#FF6384" },
+            { name: "班级表扬信", probability: 0.15, color: "#36A2EB" },
+            { name: "小零食一份", probability: 0.2, color: "#FFCE56" },
+            { name: "与老师合影", probability: 0.15, color: "#4BC0C0" },
+            { name: "优先选择座位", probability: 0.1, color: "#9966FF" },
+            { name: "神秘小礼物", probability: 0.1, color: "#FF9F40" },
+            { name: "生日祝福卡片", probability: 0.1, color: "#C9CBCF" },
+            { name: "再来一次", probability: 0.1, color: "#7bed9f" }
+        ];
+
+        // 初始化转盘
+        function initWheel() {
+            const wheel = document.getElementById('wheel');
+            wheel.innerHTML = '';
+            
+            // 计算每个奖项在转盘上的角度
+            const totalProbability = prizes.reduce((sum, prize) => sum + prize.probability, 0);
+            let currentAngle = 0;
+            
+            prizes.forEach(prize => {
+                const sectionAngle = prize.probability * 360;
+                const section = document.createElement('div');
+                section.className = 'wheel-section';
+                section.style.backgroundColor = prize.color;
+                section.style.transform = `rotate(${currentAngle}deg) skewY(${90 - sectionAngle}deg)`;
+                
+                const text = document.createElement('div');
+                text.textContent = prize.name;
+                text.style.transform = `rotate(${sectionAngle/2}deg)`;
+                text.style.position = 'absolute';
+                text.style.width = '100px';
+                text.style.left = '20px';
+                text.style.top = '20px';
+                text.style.textAlign = 'left';
+                
+                section.appendChild(text);
+                wheel.appendChild(section);
+                
+                currentAngle += sectionAngle;
+            });
+        }
+
+        // 创建彩色纸屑效果
+        function createConfetti() {
+            const colors = ['#f94144', '#f3722c', '#f8961e', '#f9c74f', '#90be6d', '#43aa8b', '#577590'];
+            const container = document.body;
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear forwards`;
+                container.appendChild(confetti);
+                
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // 根据概率随机选择奖项
+        function getRandomPrize() {
+            const random = Math.random();
+            let cumulativeProbability = 0;
+            
+            for (const prize of prizes) {
+                cumulativeProbability += prize.probability;
+                if (random <= cumulativeProbability) {
+                    return prize;
+                }
+            }
+            
+            // 如果由于浮点数精度问题没有返回，返回最后一个奖项
+            return prizes[prizes.length - 1];
+        }
+
+        // 开始抽奖
+        function startLottery() {
+            const nameInput = document.getElementById('nameInput');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('请输入你的姓名！');
+                return;
+            }
+            
+            const wheel = document.getElementById('wheel');
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+            const birthdayMessage = document.getElementById('birthdayMessage');
+            const startBtn = document.getElementById('startBtn');
+            
+            // 禁用按钮防止重复点击
+            startBtn.disabled = true;
+            
+            // 隐藏之前的结果
+            resultDiv.style.display = 'none';
+            
+            // 随机选择奖项
+            const prize = getRandomPrize();
+            
+            // 计算旋转角度（确保指针指向所选奖项）
+            const prizeIndex = prizes.findIndex(p => p.name === prize.name);
+            const totalProbability = prizes.reduce((sum, p) => sum + p.probability, 0);
+            let cumulativeAngle = 0;
+            
+            for (let i = 0; i < prizeIndex; i++) {
+                cumulativeAngle += prizes[i].probability * 360;
+            }
+            
+            // 计算奖项中心的角度
+            const prizeCenterAngle = cumulativeAngle + (prizes[prizeIndex].probability * 360) / 2;
+            
+            // 计算需要旋转的角度（多转几圈然后停在正确位置）
+            const spinAngle = 360 * 5 + (360 - prizeCenterAngle);
+            
+            // 应用旋转
+            wheel.style.transform = `rotate(${spinAngle}deg)`;
+            
+            // 旋转结束后显示结果
+            setTimeout(() => {
+                resultText.textContent = `${name} 同学，恭喜你抽中了：${prize.name}！`;
+                birthdayMessage.textContent = `祝 ${name} 同学生日快乐！`;
+                resultDiv.style.display = 'block';
+                
+                // 创建庆祝效果
+                createConfetti();
+                
+                // 重新启用按钮
+                startBtn.disabled = false;
+            }, 4000);
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            initWheel();
+            
+            // 绑定开始按钮事件
+            document.getElementById('startBtn').addEventListener('click', startLottery);
+            
+            // 允许按回车键开始抽奖
+            document.getElementById('nameInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    startLottery();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
