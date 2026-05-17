@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暴打火柴人小游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+
+        /* 全局背景图 自行替换url即可 */
+        body {
+            background: url(background.jpg) no-repeat center center;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+        }
+
+        .title {
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 6px #000;
+        }
+
+        .task-select {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .task-card {
+            width: 180px;
+            height: 220px;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.3s;
+            text-align: center;
+        }
+
+        .task-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .task-img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .task-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .game-screen {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .stickman {
+            width: 200px;
+            height: 350px;
+            position: relative;
+            margin: 0 auto 30px;
+            transition: transform 0.1s ease;
+        }
+
+        .stick-head {
+            width: 100px;
+            height: 100px;
+            border-radius: 0;
+            overflow: hidden;
+            border: 4px solid #000;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .head-img {
+            object-fit: unset !important;
+            width: auto !important;
+            height: 100% !important;
+            max-width: none !important;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 笔直身体 */
+        .stick-body {
+            width: 6px;
+            height: 120px;
+            background: #000;
+            position: absolute;
+            top: 84px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 手臂摆正 */
+        .stick-arm {
+            width: 6px;
+            height: 70px;
+            background: #000;
+            position: absolute;
+            top: 100px;
+        }
+        .stick-arm.left { left: 45px; transform: rotate(15deg); }
+        .stick-arm.right { right: 45px; transform: rotate(-15deg); }
+
+        /* 双腿完全摆正 不歪斜 */
+        .stick-leg {
+            width: 6px;
+            height: 85px;
+            background: #000;
+            position: absolute;
+            top: 200px;
+        }
+        .stick-leg.left { left: 42px; transform: rotate(0deg); }
+        .stick-leg.right { right: 42px; transform: rotate(0deg); }
+
+        .hit-btn {
+            padding: 15px 40px;
+            font-size: 22px;
+            background: #d62828;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        .hit-btn:active {
+            transform: scale(0.95);
+            background: #a71d1d;
+        }
+
+        .hit-count {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px #000;
+        }
+
+        .back-btn {
+            margin-top: 15px;
+            padding: 8px 20px;
+            font-size: 16px;
+            background: #222;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">选择你的任务</h1>
+
+    <div class="task-select" id="taskSelect">
+        <div class="task-card" onclick="startGame(1)">
+            <img src="N2.jpg" alt="任务1" class="task-img">
+            <div class="task-name">N2</div>
+        </div>
+        <div class="task-card" onclick="startGame(2)">
+            <img src="stomachache.jpg" alt="任务2" class="task-img">
+            <div class="task-name">肚子疼</div>
+        </div>
+        <div class="task-card" onclick="startGame(3)">
+            <img src="ghl.jpg" alt="任务3" class="task-img">
+            <div class="task-name">首师附的一片天</div>
+        </div>
+    </div>
+
+    <div class="game-screen" id="gameScreen">
+        <div class="stickman">
+            <div class="stick-head">
+                <img id="stickHeadImg" src="" alt="人物头像">
+            </div>
+            <div class="stick-body"></div>
+            <div class="stick-arm left"></div>
+            <div class="stick-arm right"></div>
+            <div class="stick-leg left"></div>
+            <div class="stick-leg right"></div>
+        </div>
+
+        <button class="hit-btn" onclick="hitStickman()">点击暴打他！👊</button>
+        <div class="hit-count" id="hitCount">击打次数：0</div>
+        <button class="back-btn" onclick="backToSelect()">返回选择任务</button>
+    </div>
+
+    <script>
+        let hitCount = 0;
+        let selectedImg = "";
+
+        function startGame(taskNum) {
+            const taskImages = [
+                "N2.jpg",
+                "stomachache.jpg",
+                "ghl.jpg"
+            ];
+            selectedImg = taskImages[taskNum - 1];
+            document.getElementById("stickHeadImg").src = selectedImg;
+            hitCount = 0;
+            document.getElementById("hitCount").textContent = "击打次数：0";
+            document.getElementById("taskSelect").style.display = "none";
+            document.getElementById("gameScreen").style.display = "block";
+        }
+
+        function hitStickman() {
+            hitCount++;
+            document.getElementById("hitCount").textContent = `击打次数：${hitCount}`;
+            const stickman = document.querySelector(".stickman");
+            stickman.style.transform = "translateX(-12px)";
+            setTimeout(() => stickman.style.transform = "translateX(12px)", 50);
+            setTimeout(() => stickman.style.transform = "translateX(0)", 100);
+        }
+
+        function backToSelect() {
+            document.getElementById("gameScreen").style.display = "none";
+            document.getElementById("taskSelect").style.display = "flex";
+        }
+    </script>
+</body>
+</html>
