@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>帮我砍一刀</title>
+    <style>
+        :root {
+            --primary-color: #ff4d4f;
+            --bg-color: #fff5f5;
+            --card-bg: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .header {
+            width: 100%;
+            background: linear-gradient(180deg, #ff4d4f 0%, #ff7875 100%);
+            padding: 40px 20px 60px;
+            text-align: center;
+            color: #fff;
+            position: relative;
+        }
+
+        .header h1 { font-size: 24px; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header p { font-size: 14px; opacity: 0.9; }
+
+        .main-card {
+            width: 90%;
+            max-width: 400px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: -40px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(255, 77, 79, 0.15);
+            text-align: center;
+        }
+
+        .target-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .target-text span { color: var(--primary-color); font-size: 22px; }
+
+        /* 进度条样式 */
+        .progress-container { margin: 20px 0; }
+        .progress-info { display: flex; justify-content: space-between; font-size: 12px; color: #999; margin-bottom: 8px; }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ffe0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff7875, #ff4d4f);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* 砍价按钮 */
+        .cut-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(180deg, #ff6b6b, #ee2c2c);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            box-shadow: 0 6px 0 #c41f1f, 0 8px 15px rgba(238, 44, 44, 0.4);
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.1s, box-shadow 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cut-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #c41f1f, 0 4px 10px rgba(238, 44, 44, 0.4);
+        }
+
+        .cut-btn.disabled {
+            background: #ccc;
+            box-shadow: 0 6px 0 #aaa;
+            pointer-events: none;
+        }
+
+        /* 好友头像滚动区 */
+        .friends-scroll {
+            margin-top: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .avatar-stack { display: flex; }
+        .avatar {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            margin-left: -10px;
+            background: #eee;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: #999;
+            overflow: hidden;
+        }
+        .avatar:first-child { margin-left: 0; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 砍价弹窗动画 */
+        .cut-result {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        .cut-result.show { transform: translate(-50%, -50%) scale(1); }
+        .cut-result .amount { color: #ffe066; font-size: 36px; }
+
+        /* 底部提示 */
+        .footer-tip {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #bbb;
+            padding-bottom: 30px;
+        }
+
+        /* 成功状态 */
+        .success-state { display: none; text-align: center; padding: 20px 0; }
+        .success-state .icon { font-size: 60px; margin-bottom: 16px; }
+        .success-state h2 { color: var(--primary-color); margin-bottom: 10px; }
+        .success-state p { color: #999; font-size: 14px; }
+
+    </style>
+</head>
+<body>
+
+    <!-- ============================================ -->
+    <!-- 🎯 砍一刀主题配置区 -->
+    <!-- ============================================ -->
+    <script>
+        const CONFIG = {
+            targetName: "2026北京中考数学出题人",
+            targetPrice: "100.00",
+            currentAmount: "99.97",
+            successMsg: "恭喜你！成功锁定出题人！",
+            btnText: "帮我砍一刀",
+            btnTextDone: "已帮砍，明天再来",
+        };
+    </script>
+    <!-- ============================================ -->
+
+    <div class="header">
+        <h1>🔥 紧急求助！差一点就锁定了</h1>
+        <p>已有 <span id="helpCount">286</span> 人帮忙砍过</p>
+    </div>
+
+    <div class="main-card">
+        <!-- 正常砍价状态 -->
+        <div id="normalState">
+            <div class="target-text">
+                我正在砍 <span id="displayName"></span><br>
+                快来帮我也砍一刀吧！
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span>已砍 <span id="displayCurrent"></span>%</span>
+                    <span>目标 100%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <button class="cut-btn" id="cutBtn" onclick="handleCut()"></button>
+
+            <div class="friends-scroll">
+                <div class="avatar-stack" id="avatarStack"></div>
+                <span>刚刚有人帮你砍了一刀</span>
+            </div>
+        </div>
+
+        <!-- 成功状态 -->
+        <div class="success-state" id="successState">
+            <div class="icon">🎉</div>
+            <h2 id="successTitle"></h2>
+            <p>出题人名单将在24小时内公布</p>
+            <button class="cut-btn disabled" style="margin-top:20px;" id="doneBtn"></button>
+        </div>
+    </div>
+
+    <div class="cut-result" id="cutResult">
+        帮砍 <span class="amount" id="cutAmount"></span> %
+    </div>
+
+    <div class="footer-tip">
+        ⚠️ 本页面仅供娱乐整蛊，非真实活动<br>
+        请勿当真，祝各位考生逢考必过！
+    </div>
+
+    <script>
+        // 初始化文案
+        document.getElementById('displayName').textContent = CONFIG.targetName;
+        document.getElementById('displayCurrent').textContent = CONFIG.currentAmount;
+        document.getElementById('cutBtn').textContent = CONFIG.btnText;
+        document.getElementById('successTitle').textContent = CONFIG.successMsg;
+        document.getElementById('doneBtn').textContent = CONFIG.btnTextDone;
+
+        // 计算进度
+        const current = parseFloat(CONFIG.currentAmount);
+        const target = parseFloat(CONFIG.targetPrice);
+        const percent = Math.min((current / target) * 100, 100);
+        document.getElementById('progressFill').style.width = percent + '%';
+
+        // 生成随机头像
+        const avatarStack = document.getElementById('avatarStack');
+        const names = ['张', '李', '王', '刘', '陈', '杨', '赵', '黄', '周', '吴'];
+        const colors = ['#ff7875','#ffa940','#ffd666','#95de64','#69c0ff','#b37feb','#ff85c0'];
+        for(let i = 0; i < 5; i++){
+            const div = document.createElement('div');
+            div.className = 'avatar';
+            div.style.background = colors[Math.floor(Math.random()*colors.length)];
+            div.style.color = '#fff';
+            div.textContent = names[Math.floor(Math.random()*names.length)];
+            avatarStack.appendChild(div);
+        }
+
+        // 砍价逻辑
+        let hasCut = false;
+        function handleCut(){
+            if(hasCut) return;
+            hasCut = true;
+
+            const btn = document.getElementById('cutBtn');
+            btn.classList.add('disabled');
+            btn.textContent = '砍价中...';
+
+            // 模拟网络延迟
+            setTimeout(() => {
+                // 经典拼多多套路：只砍 0.01 ~ 0.02 %
+                const cutValue = (Math.random() * 0.01 + 0.01).toFixed(2);
+                
+                // 显示砍价结果弹窗
+                const result = document.getElementById('cutResult');
+                document.getElementById('cutAmount').textContent = cutValue;
+                result.classList.add('show');
+
+                // 更新进度
+                const newCurrent = (current + parseFloat(cutValue)).toFixed(2);
+                const newPercent = Math.min((newCurrent / target) * 100, 100);
+                document.getElementById('displayCurrent').textContent = newCurrent;
+                document.getElementById('progressFill').style.width = newPercent + '%';
+
+                // 更新帮助人数
+                const countEl = document.getElementById('helpCount');
+                countEl.textContent = parseInt(countEl.textContent) + 1;
+
+                setTimeout(() => {
+                    result.classList.remove('show');
+                    // 演示用：点一次直接进成功状态
+                    showSuccess();
+                }, 1500);
+
+            }, 800);
+        }
+
+        function showSuccess(){
+            document.getElementById('normalState').style.display = 'none';
+            document.getElementById('successState').style.display = 'block';
+            createConfetti();
+        }
+
+        // 简易撒花效果
+        function createConfetti(){
+            const colors = ['#ff4d4f','#ffe066','#69c0ff','#95de64','#ff85c0'];
+            for(let i = 0; i < 30; i++){
+                const conf = document.createElement('div');
+                conf.style.cssText = `
+                    position:fixed; top:-10px; 
+                    left:${Math.random()*100}vw; 
+                    width:${Math.random()*8+4}px; 
+                    height:${Math.random()*8+4}px; 
+                    background:${colors[Math.floor(Math.random()*colors.length)]}; 
+                    border-radius:${Math.random()>0.5?'50%':'2px'};
+                    z-index:200; pointer-events:none;
+                    animation: fall ${Math.random()*2+2}s linear forwards;
+                `;
+                document.body.appendChild(conf);
+                setTimeout(()=>conf.remove(), 4000);
+            }
+        }
+
+        // 撒花动画关键帧
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to { transform: translateY(110vh) rotate(${Math.random()*720}deg); opacity:0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
